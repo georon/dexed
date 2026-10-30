@@ -1,0 +1,31 @@
+html, body { margin: 0; height: 100%; }
+body { display: flex; flex-direction: column; font-family: system-ui, sans-serif; background: #1e1e1e; color: #ddd; }
+#tabs { display: flex; overflow-x: auto; background: #2d2d2d; flex: none; }
+.tab { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap; border-right: 1px solid #1e1e1e; font-size: 13px; }
+.tab.active { background: #1e1e1e; }
+.tab .close { border-radius: 3px; padding: 0 4px; }
+.tab .close:hover { background: #555; }
+#editor { flex: 1; resize: none; border: none; outline: none; padding: 10px; background: #1e1e1e; color: #ddd; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; tab-size: 4; }
+[hidden] { display: none !important; }
+.toolbar { display: flex; align-items: center; gap: 2px; padding: 4px 6px; background: #333; flex: none; border-bottom: 1px solid #222; }
+.toolbar button { min-width: 30px; height: 28px; padding: 0 6px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #ddd; font-size: 14px; cursor: pointer; }
+.toolbar button:hover { background: #4a4a4a; }
+.toolbar button.on { background: #0e639c; border-color: #1177bb; }
+.toolbar .spacer { flex: 1; }
+.toolbar .sep { width: 1px; height: 18px; background: #555; margin: 0 4px; }
+.segmented { display: flex; }
+.segmented button { border-color: #555; border-radius: 0; font-size: 12px; }
+.segmented button:first-child { border-radius: 4px 0 0 4px; }
+.segmented button:last-child { border-radius: 0 4px 4px 0; }
+#rich { flex: 1; overflow: auto; padding: 10px 16px; background: #fff; color: #111; outline: none; font: 16px/1.5 system-ui, sans-serif; }
+#split { display: flex; flex: 1; min-height: 0; }
+#split #editor { flex: 1; min-width: 0; }
+#preview { flex: 1; min-width: 0; overflow: auto; padding: 10px 20px; background: #fff; color: #111; border-left: 1px solid #333; font: 15px/1.6 system-ui, sans-serif; }
+#preview h1, #preview h2 { border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+#preview pre { background: #f4f4f4; padding: 10px; overflow: auto; border-radius: 4px; }
+#preview code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+#preview pre code { padding: 0; background: none; }
+#preview blockquote { margin: 0; padding-left: 12px; border-left: 4px solid #ccc; color: #555; }
+#preview table { border-collapse: collapse; }
+#preview th, #preview td { border: 1px solid #ccc; padding: 4px 10px; }
+#preview img { max-width: 100%; }

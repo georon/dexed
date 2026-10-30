@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; img-src 'self' data: https:"
+    >
+    <title>Dexed</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="main-toolbar" class="toolbar">
+      <button data-app="new" title="New (Ctrl+N)">📄</button>
+      <button data-app="open" title="Open (Ctrl+O)">📂</button>
+      <button data-app="save" title="Save (Ctrl+S)">💾</button>
+      <span class="spacer"></span>
+      <div class="segmented" id="mode-switch">
+        <button data-mode="text" title="Text mode (Ctrl+Alt+T)">Text</button>
+        <button data-mode="rich" title="Rich text mode (Ctrl+Alt+R)">Rich Text</button>
+        <button data-mode="markdown" title="Markdown mode (Ctrl+Alt+M)">Markdown</button>
+      </div>
+    </div>
+    <div id="format-toolbar" class="toolbar" hidden>
+      <button data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+      <button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+      <span class="sep"></span>
+      <button data-font="1" title="Bigger font">A<sup>+</sup></button>
+      <button data-font="-1" title="Smaller font">A<sup>−</sup></button>
+      <span class="sep"></span>
+      <button data-cmd="insertUnorderedList" title="Bullet list">•≡</button>
+      <button data-cmd="insertOrderedList" title="Numbered list">1≡</button>
+      <span class="sep"></span>
+      <button data-cmd="justifyLeft" title="Align left">⯇</button>
+      <button data-cmd="justifyCenter" title="Center">◆</button>
+      <button data-cmd="justifyRight" title="Align right">⯈</button>
+      <span class="sep"></span>
+      <button data-cmd="undo" title="Undo">↶</button>
+      <button data-cmd="redo" title="Redo">↷</button>
+      <button data-cmd="removeFormat" title="Clear formatting">Tx</button>
+    </div>
+    <div id="md-toolbar" class="toolbar" hidden>
+      <button data-md="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button data-md="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button data-md="strike" title="Strikethrough"><s>S</s></button>
+      <button data-md="code" title="Inline code">&lt;/&gt;</button>
+      <span class="sep"></span>
+      <button data-md="h1" title="Heading 1">H1</button>
+      <button data-md="h2" title="Heading 2">H2</button>
+      <button data-md="h3" title="Heading 3">H3</button>
+      <span class="sep"></span>
+      <button data-md="ul" title="Bullet list">•≡</button>
+      <button data-md="ol" title="Numbered list">1≡</button>
+      <button data-md="task" title="Task list">☑</button>
+      <button data-md="quote" title="Quote">❝</button>
+      <span class="sep"></span>
+      <button data-md="link" title="Link (Ctrl+K)">🔗</button>
+      <button data-md="image" title="Image">🖼</button>
+      <button data-md="codeblock" title="Code block">{ }</button>
+      <button data-md="table" title="Table">▦</button>
+      <button data-md="hr" title="Horizontal rule">―</button>
+      <span class="sep"></span>
+      <button data-md="undo" title="Undo">↶</button>
+      <button data-md="redo" title="Redo">↷</button>
+    </div>
+    <div id="tabs"></div>
+    <div id="split">
+      <textarea id="editor" spellcheck="false" placeholder="File > Open (Ctrl+O) or File > New (Ctrl+N)"></textarea>
+      <div id="preview" hidden></div>
+    </div>
+    <div id="rich" contenteditable="true" hidden></div>
+    <script src="node_modules/marked/lib/marked.umd.js"></script>
+    <script src="node_modules/dompurify/dist/purify.min.js"></script>
+    <script src="lib/edit.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>

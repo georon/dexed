@@ -1,0 +1,28 @@
+{
+  "devDependencies": {
+    "electron": "^45.2.0"
+  },
+  "name": "dexed",
+  "version": "1.0.0",
+  "description": "Editer for text, json, rich text",
+  "main": "index.js",
+  "dependencies": {
+    "debug": "^4.4.3",
+    "dompurify": "^3.4.17",
+    "env-paths": "^3.0.0",
+    "graceful-fs": "^4.2.11",
+    "marked": "^18.1.2",
+    "ms": "^2.1.3",
+    "progress": "^2.0.3",
+    "semver": "^7.8.5",
+    "sumchecker": "^3.0.1",
+    "undici": "^7.30.1",
+    "undici-types": "^7.24.6"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "electron . --no-sandbox"
+  },
+  "author": "rony.george.can@gmail.com",
+  "license": "ISC"
+}
