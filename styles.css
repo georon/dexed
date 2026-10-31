@@ -17,7 +17,7 @@ body { display: flex; flex-direction: column; font-family: system-ui, sans-serif
 .segmented button { border-color: #555; border-radius: 0; font-size: 12px; }
 .segmented button:first-child { border-radius: 4px 0 0 4px; }
 .segmented button:last-child { border-radius: 0 4px 4px 0; }
-#rich { flex: 1; overflow: auto; padding: 10px 16px; background: #fff; color: #111; outline: none; font: 16px/1.5 system-ui, sans-serif; }
+#rich { flex: 1; min-width: 0; overflow: auto; padding: 10px 16px; background: #fff; color: #111; outline: none; font: 16px/1.5 system-ui, sans-serif; }
 #split { display: flex; flex: 1; min-height: 0; }
 #split #editor { flex: 1; min-width: 0; }
 #preview { flex: 1; min-width: 0; overflow: auto; padding: 10px 20px; background: #fff; color: #111; border-left: 1px solid #333; font: 15px/1.6 system-ui, sans-serif; }
@@ -29,3 +29,20 @@ body { display: flex; flex-direction: column; font-family: system-ui, sans-serif
 #preview table { border-collapse: collapse; }
 #preview th, #preview td { border: 1px solid #ccc; padding: 4px 10px; }
 #preview img { max-width: 100%; }
+#workspace { display: flex; flex: 1; min-height: 0; }
+#main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#sidebar { width: 240px; flex: none; display: flex; flex-direction: column; background: #252526; border-right: 1px solid #1a1a1a; font-size: 13px; }
+#sidebar[hidden] { display: none; }
+#sidebar-header { display: flex; align-items: center; gap: 2px; padding: 6px 8px; text-transform: uppercase; font-size: 11px; letter-spacing: .5px; color: #aaa; }
+#folder-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#sidebar button { border: none; background: transparent; color: #ddd; cursor: pointer; border-radius: 3px; }
+#sidebar button:hover { background: #4a4a4a; }
+#tree { flex: 1; overflow: auto; padding-bottom: 8px; user-select: none; }
+#tree ul { list-style: none; margin: 0; padding: 0; }
+#tree .row { display: flex; align-items: center; gap: 4px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
+#tree .row:hover { background: #2a2d2e; }
+#tree .row.active { background: #37373d; }
+#tree .arrow { width: 12px; flex: none; text-align: center; font-size: 10px; color: #aaa; }
+#tree .name { overflow: hidden; text-overflow: ellipsis; }
+#tree .msg, #tree .hint { color: #888; padding: 4px 12px; }
+#tree .hint button { margin-top: 6px; padding: 4px 10px; background: #0e639c; }

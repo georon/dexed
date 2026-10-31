@@ -4,6 +4,10 @@ const richEl = document.getElementById('rich')
 const formatBar = document.getElementById('format-toolbar')
 const mdBar = document.getElementById('md-toolbar')
 const previewEl = document.getElementById('preview')
+const sidebar = document.getElementById('sidebar')
+const treeEl = document.getElementById('tree')
+const folderNameEl = document.getElementById('folder-name')
+const refreshBtn = document.querySelector('[data-side="refresh"]')
 const modeButtons = document.querySelectorAll('#mode-switch button')
 
 // Tab content is always a string: raw text in text mode, HTML in rich mode.
@@ -38,6 +42,7 @@ function renderTabs() {
   }
   const t = active()
   document.title = t ? `${nameOf(t)} - Dexed` : 'Dexed'
+  markActiveInTree()
 }
 
 // Plain text shown in rich mode keeps its line breaks; real HTML is sanitized.
@@ -91,6 +96,114 @@ function addTab(path, content) {
   tabs.push(t)
   return t.id
 }
+
+// Opens one file by path in a tab, in the mode that suits its extension.
+async function openPath(filePath) {
+  const open = tabs.find((t) => t.path === filePath)
+  if (open) return activate(open.id)
+  const res = await window.dexed.readFile(filePath)
+  if (res.error) return alert(`${baseName(filePath)}: ${res.error}`)
+  activate(addTab(res.path, res.content))
+}
+
+// --- Folder tree (sidebar) ---
+let rootDir = null
+
+function markActiveInTree() {
+  const p = active()?.path
+  treeEl.querySelectorAll('.row.file').forEach((row) =>
+    row.classList.toggle('active', row.dataset.path === p)
+  )
+}
+
+function message(text) {
+  const el = document.createElement('p')
+  el.className = 'msg'
+  el.textContent = text
+  return el
+}
+
+// Fills `ul` with the entries of `dir`. Sub-folders load lazily when first expanded.
+async function loadDir(dir, ul) {
+  ul.textContent = ''
+  let entries
+  try {
+    entries = await window.dexed.listDir(dir)
+  } catch (err) {
+    return ul.append(message('Cannot read folder.'))
+  }
+  if (!entries.length) ul.append(message('(empty)'))
+  for (const entry of entries) {
+    const li = document.createElement('li')
+    const row = document.createElement('div')
+    row.className = 'row ' + (entry.isDir ? 'dir' : 'file')
+    row.dataset.path = entry.path
+    row.title = entry.path
+    const arrow = document.createElement('span')
+    arrow.className = 'arrow'
+    arrow.textContent = entry.isDir ? '▸' : ''
+    const name = document.createElement('span')
+    name.className = 'name'
+    name.textContent = entry.name
+    row.append(arrow, name)
+    li.append(row)
+
+    if (entry.isDir) {
+      const children = document.createElement('ul')
+      children.hidden = true
+      li.append(children)
+      let loaded = false
+      row.onclick = async () => {
+        children.hidden = !children.hidden
+        arrow.textContent = children.hidden ? '▸' : '▾'
+        if (!children.hidden && !loaded) {
+          loaded = true
+          await loadDir(entry.path, children)
+          markActiveInTree()
+        }
+      }
+    } else {
+      row.onclick = () => openPath(entry.path)
+    }
+    ul.append(li)
+  }
+  // Indent nested levels.
+  ul.querySelectorAll(':scope > li > .row').forEach((row) => {
+    row.style.paddingLeft = `${8 + depthOf(ul) * 14}px`
+  })
+}
+
+function depthOf(ul) {
+  let depth = 0
+  for (let el = ul.parentElement; el && el !== treeEl; el = el.parentElement) {
+    if (el.tagName === 'UL') depth++
+  }
+  return depth
+}
+
+async function showFolder(dir) {
+  rootDir = dir
+  folderNameEl.textContent = baseName(dir)
+  folderNameEl.title = dir
+  refreshBtn.hidden = false
+  treeEl.textContent = ''
+  const ul = document.createElement('ul')
+  treeEl.append(ul)
+  await loadDir(dir, ul)
+  markActiveInTree()
+}
+
+async function openFolder() {
+  const dir = await window.dexed.chooseFolder()
+  if (dir) await showFolder(dir)
+}
+
+document.getElementById('sidebar').addEventListener('click', (e) => {
+  const b = e.target.closest('button')
+  if (!b) return
+  if (b.dataset.side === 'open') openFolder()
+  else if (b.dataset.side === 'refresh' && rootDir) showFolder(rootDir)
+})
 
 function setMode(mode) {
   const t = active()
@@ -214,6 +327,8 @@ previewEl.addEventListener('click', (e) => {
 const appActions = {
   new: () => activate(addTab(null, '')),
   open: openFiles,
+  openFolder,
+  toggleSidebar: () => { sidebar.hidden = !sidebar.hidden },
   save: () => save(),
   saveAs: () => save(true),
   close: () => activeId && closeTab(activeId),

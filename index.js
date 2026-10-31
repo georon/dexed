@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron')
 const fs = require('fs/promises')
 const path = require('path')
+const { sortEntries, isBinary } = require('./lib/edit.js')
 
 let win
 
@@ -29,6 +30,7 @@ const buildMenu = (mode = 'text') => {
       submenu: [
         { label: 'New', accelerator: 'CmdOrCtrl+N', click: () => send('new') },
         { label: 'Open...', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
+        { label: 'Open folder', accelerator: 'CmdOrCtrl+Shift+O', click: () => send('openFolder') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { label: 'Save As...', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('saveAs') },
         { label: 'Close Tab', accelerator: 'CmdOrCtrl+W', click: () => send('close') },
@@ -45,7 +47,20 @@ const buildMenu = (mode = 'text') => {
         { label: 'Markdown', type: 'radio', checked: mode === 'markdown', accelerator: 'CmdOrCtrl+Alt+M', click: () => send('mode:markdown') }
       ]
     },
-    { role: 'viewMenu' }
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Toggle Sidebar', accelerator: 'CmdOrCtrl+Shift+B', click: () => send('toggleSidebar') },
+        { type: 'separator' },
+        { role: 'reload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { role: 'togglefullscreen' }
+      ]
+    }
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
@@ -58,6 +73,38 @@ ipcMain.handle('file:open', async () => {
   return Promise.all(
     filePaths.map(async (p) => ({ path: p, content: await fs.readFile(p, 'utf8') }))
   )
+})
+
+ipcMain.handle('dir:choose', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, { properties: ['openDirectory'] })
+  return canceled ? null : filePaths[0]
+})
+
+ipcMain.handle('dir:list', async (_e, dir) => {
+  const dirents = await fs.readdir(dir, { withFileTypes: true })
+  const entries = await Promise.all(
+    dirents.map(async (d) => {
+      const full = path.join(dir, d.name)
+      let isDir = d.isDirectory()
+      if (d.isSymbolicLink()) isDir = await fs.stat(full).then((s) => s.isDirectory(), () => false)
+      return { name: d.name, path: full, isDir }
+    })
+  )
+  return sortEntries(entries)
+})
+
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+
+// Reads one file for a tab; returns { error } instead of throwing so the page can show it.
+ipcMain.handle('file:read', async (_e, filePath) => {
+  try {
+    const buf = await fs.readFile(filePath)
+    if (buf.length > MAX_FILE_BYTES) return { error: 'File is too large to open (over 10 MB).' }
+    if (isBinary(buf)) return { error: 'This looks like a binary file, so it was not opened.' }
+    return { path: filePath, content: buf.toString('utf8') }
+  } catch (err) {
+    return { error: err.message }
+  }
 })
 
 // Returns the saved path, or null if the user cancelled the Save As dialog.

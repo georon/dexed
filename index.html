@@ -12,7 +12,8 @@
   <body>
     <div id="main-toolbar" class="toolbar">
       <button data-app="new" title="New (Ctrl+N)">📄</button>
-      <button data-app="open" title="Open (Ctrl+O)">📂</button>
+      <button data-app="open" title="Open file (Ctrl+O)">📂</button>
+      <button data-app="openFolder" title="Open folder (Ctrl+Shift+O)">🗂</button>
       <button data-app="save" title="Save (Ctrl+S)">💾</button>
       <span class="spacer"></span>
       <div class="segmented" id="mode-switch">
@@ -65,12 +66,24 @@
       <button data-md="undo" title="Undo">↶</button>
       <button data-md="redo" title="Redo">↷</button>
     </div>
-    <div id="tabs"></div>
-    <div id="split">
-      <textarea id="editor" spellcheck="false" placeholder="File > Open (Ctrl+O) or File > New (Ctrl+N)"></textarea>
-      <div id="preview" hidden></div>
+    <div id="workspace">
+      <aside id="sidebar">
+        <div id="sidebar-header">
+          <span id="folder-name">Explorer</span>
+          <button data-side="refresh" title="Refresh" hidden>⟳</button>
+          <button data-side="open" title="Open folder">🗂</button>
+        </div>
+        <div id="tree"><p class="hint">No folder open.<br><button data-side="open">Open folder</button></p></div>
+      </aside>
+      <div id="main">
+        <div id="tabs"></div>
+        <div id="split">
+          <textarea id="editor" spellcheck="false" placeholder="File > Open (Ctrl+O) or File > New (Ctrl+N)"></textarea>
+          <div id="preview" hidden></div>
+          <div id="rich" contenteditable="true" hidden></div>
+        </div>
+      </div>
     </div>
-    <div id="rich" contenteditable="true" hidden></div>
     <script src="node_modules/marked/lib/marked.umd.js"></script>
     <script src="node_modules/dompurify/dist/purify.min.js"></script>
     <script src="lib/edit.js"></script>

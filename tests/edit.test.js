@@ -164,3 +164,39 @@ describe('markdownEdit', () => {
     assert.deepEqual(a, b)
   })
 })
+
+describe('sortEntries', () => {
+  const names = (list) => list.map((e) => e.name)
+  test('puts folders before files', () => {
+    const out = E.sortEntries([
+      { name: 'a.txt', isDir: false },
+      { name: 'zeta', isDir: true },
+      { name: 'b.txt', isDir: false },
+      { name: 'alpha', isDir: true }
+    ])
+    assert.deepEqual(names(out), ['alpha', 'zeta', 'a.txt', 'b.txt'])
+  })
+  test('ignores case and sorts numbers naturally', () => {
+    const out = E.sortEntries([
+      { name: 'file10.md', isDir: false },
+      { name: 'File2.md', isDir: false },
+      { name: 'apple.md', isDir: false }
+    ])
+    assert.deepEqual(names(out), ['apple.md', 'File2.md', 'file10.md'])
+  })
+  test('does not mutate its input', () => {
+    const input = [{ name: 'b', isDir: false }, { name: 'a', isDir: false }]
+    E.sortEntries(input)
+    assert.deepEqual(names(input), ['b', 'a'])
+  })
+})
+
+describe('isBinary', () => {
+  test('detects a NUL byte', () => {
+    assert.equal(E.isBinary(Buffer.from([0x89, 0x50, 0x00, 0x47])), true)
+  })
+  test('treats text, including UTF-8, as text', () => {
+    assert.equal(E.isBinary(Buffer.from('hello\nwörld ✓')), false)
+    assert.equal(E.isBinary(Buffer.alloc(0)), false)
+  })
+})
