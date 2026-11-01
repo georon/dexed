@@ -15,6 +15,7 @@
       <button data-app="open" title="Open file (Ctrl+O)">📂</button>
       <button data-app="openFolder" title="Open folder (Ctrl+Shift+O)">🗂</button>
       <button data-app="save" title="Save (Ctrl+S)">💾</button>
+      <button data-app="encrypt" title="Encrypt file (adds .enc)">🔒</button>
       <span class="spacer"></span>
       <div class="segmented" id="mode-switch">
         <button data-mode="text" title="Text mode (Ctrl+Alt+T)">Text</button>
@@ -84,6 +85,18 @@
         </div>
       </div>
     </div>
+    <dialog id="pw-dialog">
+      <form method="dialog" id="pw-form">
+        <p id="pw-title"></p>
+        <input type="password" id="pw-input" placeholder="Password" autocomplete="off">
+        <input type="password" id="pw-confirm" placeholder="Confirm password" autocomplete="off">
+        <p id="pw-error"></p>
+        <div class="buttons">
+          <button type="button" id="pw-cancel">Cancel</button>
+          <button type="submit">OK</button>
+        </div>
+      </form>
+    </dialog>
     <script src="node_modules/marked/lib/marked.umd.js"></script>
     <script src="node_modules/dompurify/dist/purify.min.js"></script>
     <script src="lib/edit.js"></script>

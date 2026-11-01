@@ -18,7 +18,7 @@ let nextId = 1
 
 const active = () => tabs.find((t) => t.id === activeId)
 const isDirty = (t) => t.content !== t.saved
-const { DEFAULT_NAMES, modeForPath, baseName, looksLikeHtml, plainToHtml, markdownEdit } = DexedEdit
+const { DEFAULT_NAMES, isEncPath, modeForPath, baseName, looksLikeHtml, plainToHtml, markdownEdit } = DexedEdit
 const nameOf = (t) => baseName(t.path)
 
 function renderTabs() {
@@ -101,9 +101,79 @@ function addTab(path, content) {
 async function openPath(filePath) {
   const open = tabs.find((t) => t.path === filePath)
   if (open) return activate(open.id)
-  const res = await window.dexed.readFile(filePath)
-  if (res.error) return alert(`${baseName(filePath)}: ${res.error}`)
-  activate(addTab(res.path, res.content))
+  let password
+  let res
+  if (isEncPath(filePath)) {
+    // Ask again until the password works or the user cancels.
+    for (;;) {
+      password = await askPassword(`Password for ${baseName(filePath)}`)
+      if (password === null) return
+      res = await window.dexed.readFile(filePath, password)
+      if (!res.error) break
+      alert(`${baseName(filePath)}: ${res.error}`)
+    }
+  } else {
+    res = await window.dexed.readFile(filePath)
+    if (res.error) return alert(`${baseName(filePath)}: ${res.error}`)
+  }
+  const id = addTab(res.path, res.content)
+  if (password) tabs.find((t) => t.id === id).password = password
+  activate(id)
+}
+
+// --- Password dialog ---
+const pwDialog = document.getElementById('pw-dialog')
+const pwInput = document.getElementById('pw-input')
+const pwConfirm = document.getElementById('pw-confirm')
+const pwError = document.getElementById('pw-error')
+
+// Resolves with the entered password, or null if cancelled. `confirm` asks for it twice.
+function askPassword(title, confirm = false) {
+  document.getElementById('pw-title').textContent = title
+  pwInput.value = pwConfirm.value = pwError.textContent = ''
+  pwConfirm.hidden = !confirm
+  return new Promise((resolve) => {
+    const form = document.getElementById('pw-form')
+    const cancel = document.getElementById('pw-cancel')
+    const finish = (value) => {
+      form.onsubmit = cancel.onclick = pwDialog.oncancel = null
+      pwDialog.close()
+      resolve(value)
+    }
+    form.onsubmit = (e) => {
+      e.preventDefault()
+      if (!pwInput.value) pwError.textContent = 'Enter a password.'
+      else if (confirm && pwInput.value !== pwConfirm.value) pwError.textContent = 'Passwords do not match.'
+      else finish(pwInput.value)
+    }
+    cancel.onclick = () => finish(null)
+    pwDialog.oncancel = (e) => { e.preventDefault(); finish(null) }
+    pwDialog.showModal()
+    pwInput.focus()
+  })
+}
+
+async function encryptActive() {
+  const t = active()
+  if (!t) return
+  if (isEncPath(t.path)) return alert(`${nameOf(t)} is already encrypted.`)
+  const password = await askPassword(`Choose a password for ${nameOf(t)}`, true)
+  if (password === null) return
+  try {
+    const newPath = await window.dexed.encryptFile({
+      filePath: t.path,
+      defaultName: DEFAULT_NAMES[t.mode] + '.enc',
+      content: t.content,
+      password
+    })
+    if (!newPath) return
+    t.path = newPath
+    t.saved = t.content
+    t.password = password
+    renderTabs()
+  } catch (err) {
+    alert(`Encrypt failed: ${err.message}`)
+  }
 }
 
 // --- Folder tree (sidebar) ---
@@ -213,22 +283,25 @@ function setMode(mode) {
 }
 
 async function openFiles() {
-  const files = await window.dexed.openFiles()
-  if (!files.length) return
-  let last
-  for (const f of files) last = addTab(f.path, f.content)
-  activate(last)
+  for (const p of await window.dexed.openFiles()) await openPath(p)
 }
 
 async function save(forceDialog = false) {
   const t = active()
   if (!t) return false
-  const saved = await window.dexed.saveFile({
-    filePath: t.path,
-    defaultName: DEFAULT_NAMES[t.mode],
-    content: t.content,
-    forceDialog
-  })
+  let saved
+  try {
+    saved = await window.dexed.saveFile({
+      filePath: t.path,
+      defaultName: DEFAULT_NAMES[t.mode],
+      content: t.content,
+      forceDialog,
+      password: t.password
+    })
+  } catch (err) {
+    alert(`Save failed: ${err.message}`)
+    return false
+  }
   if (!saved) return false
   t.path = saved
   t.saved = t.content
@@ -330,6 +403,7 @@ const appActions = {
   openFolder,
   toggleSidebar: () => { sidebar.hidden = !sidebar.hidden },
   save: () => save(),
+  encrypt: encryptActive,
   saveAs: () => save(true),
   close: () => activeId && closeTab(activeId),
   'mode:text': () => setMode('text'),
